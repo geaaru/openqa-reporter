@@ -19,7 +19,6 @@ sub opt_spec {
     [ "file|f:s@", "File to parse" ],
     [ "dir|d:s@", "Directory to parse" ],
     [ "url|u:s@", "Url to file to parse" ],
-    [ "quiet|q", "Quiet output" ],
   );
 }
 
@@ -39,51 +38,71 @@ sub execute {
   my @resources = ();
 
   if (defined($opt->{file})) {
+
     foreach (@{ $opt->{file} }) {
+      iron->man->debug("Processing file $_...");
       my $r = Resource::->new('file');
       $r->set_file($_);
       push @resources, $r;
       unless (process_file($_, $r)) {
-        die "Error on process file $_";
+        iron->man->error(
+          join("", "Error on process file $_: ", $r->get_error())
+        );
+        die "Error on process file $_"
+          unless(iron->man->ignore_errors());
       }
+      iron->man->debug("File $_: ", pp($r));
     }
   }
 
   if (defined($opt->{dir})) {
     foreach (@{ $opt->{dir} }) {
+      iron->man->info("Processing directory $_...");
       unless (process_dir($_, \@resources)) {
-        die "Error on process directory $_";
+        die "Error on process directory $_"
+          unless(iron->man->ignore_errors());
+        iron->man->error(
+          "Error on processing directory $_."
+        );
       }
     }
   }
 
   my ($needles, $texts, $invalid) = merge_resources(\@resources);
 
-  say "Needles found:";
-  foreach (sort keys (%{ $needles })) {
-    say "$_: Found in ", %{ $needles }{$_}->get_result('n_files'),
-      " files | Pass: ", %{ $needles }{$_}->get_result('pass'),
-      ", Failure: ", %{ $needles }{$_}->get_result('failure'),
-      ", Unknown: ", %{ $needles }{$_}->get_result('unknown'),
-      " | Max of ", %{ $needles }{$_}->get_result('max_needles'),
-      " needles found.";
+  if (scalar(%{ $needles })) {
+    say "Needles found:";
+    foreach (sort keys (%{ $needles })) {
+      say "$_: Found in ", %{ $needles }{$_}->get_result('n_files'),
+        " files | Pass: ", %{ $needles }{$_}->get_result('pass'),
+        ", Failure: ", %{ $needles }{$_}->get_result('failure'),
+        ", Unknown: ", %{ $needles }{$_}->get_result('unknown'),
+        " | Max of ", %{ $needles }{$_}->get_result('max_needles'),
+        " needles found.";
+    }
+  } else {
+    say "";
+    say "No Needles found.";
   }
+
   say "";
-  say "Text Found:";
-  foreach (sort keys (%{ $texts })) {
-    say "$_: Found in ", %{ $texts }{$_}->get_result('n_files'),
-      " files | Pass: ", %{ $texts }{$_}->get_result('pass'),
-      ", Failure: ", %{ $texts }{$_}->get_result('failure'),
-      ", Unknown: ", %{ $texts }{$_}->get_result('unknown');
+  if (scalar(%{ $texts })) {
+    say "Text Found:";
+    foreach (sort keys (%{ $texts })) {
+      say "$_: Found in ", %{ $texts }{$_}->get_result('n_files'),
+        " files | Pass: ", %{ $texts }{$_}->get_result('pass'),
+        ", Failure: ", %{ $texts }{$_}->get_result('failure'),
+        ", Unknown: ", %{ $texts }{$_}->get_result('unknown');
+    }
+  } else {
+    say "";
+    say "No texts found.";
   }
 
   if ($invalid) {
     say "";
     say "Invalid JSON object Found: ", $invalid;
   }
-
-  #pp(%{ $needles });
-
 }
 
 1;

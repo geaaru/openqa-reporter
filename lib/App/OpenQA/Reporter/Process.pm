@@ -29,8 +29,10 @@ sub process_file {
     $r->set_error('Error on read data');
     return 0;
   }
-  my @cream = decode_json($ice);
+
   my ($ns, $ts) = (undef, undef);
+  my @cream;
+  eval { @cream = decode_json($ice) } ;
   # say pp($cream);
 
   unless(defined($cream[0])) {
@@ -95,7 +97,11 @@ sub process_dir {
       $r->set_file($_);
       push @{$resources}, $r;
       unless (process_file("${dir}/$_", $r)) {
-        die "Error on process file $_";
+        iron->man->error(
+          join("", "Error on process file $_: ", $r->get_error())
+        );
+        die "Error on process file $_"
+          unless(iron->man->ignore_errors());
       }
     }
   }

@@ -107,4 +107,9 @@ sub Resource::get_file {
   $self->{file};
 }
 
+sub Resource::get_error {
+  my $self = shift;
+  $self->{error};
+}
+
 1;
