@@ -19,12 +19,20 @@ openqa-reporter - a openqa reporter files parser.
 
 =head1 SYNOPSIS
 
-  $ openqa-reporter parse --file <FILE.JSON>
+  $ openqa-reporter parse --file <FILE.JSON> --ignore-errors -v
   $ openqa-reporter parse --dir <DIRECTORY>
 
   # Help commands
   $ openqa-reporter help <command>
   $ openqa-reporter help|-h|--help
+
+  # Global options
+  -i --ignore-errors          Continue with errors.
+  -l[=STR] --log_level[=STR]  Specify log level (debug, info, warn,
+                              error). Default warn.
+  -L[=STR] --log_file[=STR]   Specify a logfile instead of STDOUT.
+  -v --verbose                Verbose output.
+
 
 =head1 DESCRIPTION
 
@@ -34,6 +42,12 @@ openqa-reporter is a parser of OpenQA platform that return summary of report or 
 
 =head2 parse
 Parse file or directory and produce test result summary.
+
+  openqa-reporter parse [-dfu] [long options...]
+  -f[=STR...] --file[=STR...]  File to parse
+  -d[=STR...] --dir[=STR...]   Directory to parse
+  -u[=STR...] --url[=STR...]   Url to file to parse
+
 
 =head1 LICENSE
 

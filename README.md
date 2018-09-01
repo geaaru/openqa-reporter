@@ -1,14 +1,19 @@
 # NAME
 
-App::OpenQA::Reporter - It's new $module
+openqa-reporter - a openqa reporter files parser.
 
 # SYNOPSIS
 
-    use App::OpenQA::Reporter;
+  $ openqa-reporter parse --file <FILE.JSON> --ignore-errors
+  $ openqa-reporter parse --dir <DIRECTORY>
+
+  # Help commands
+  $ openqa-reporter help <command>
+  $ openqa-reporter help|-h|--help
 
 # DESCRIPTION
 
-App::OpenQA::Reporter is ...
+openqa-reporter is a parser of OpenQA platform Needles that return summary of single or multiple reports.
 
 # LICENSE
 
