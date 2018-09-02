@@ -42,7 +42,7 @@ openqa-reporter is a parser of OpenQA platform Needles that return summary of si
 [Homepage]: https://github.com/geaaru/openqa-reporter/raw/master/docs/images/Homepage.png "Homepage"
 [Needles]: https://github.com/geaaru/openqa-reporter/raw/master/docs/images/Needles.png "Needles"
 [Resourcespage]: https://github.com/geaaru/openqa-reporter/raw/master/docs/images/Resourcespage.png "Resources"
-[Textspage]: https://github.com/geaaru/openqa-reporter/raw/master/docs/images/Resourcespage.png "Texts"
+[Textspage]: https://github.com/geaaru/openqa-reporter/raw/master/docs/images/Textspage.png "Texts"
 
 ## WebUI Homepage
 
