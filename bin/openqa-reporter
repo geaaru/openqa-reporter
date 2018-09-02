@@ -21,6 +21,8 @@ openqa-reporter - a openqa reporter files parser.
 
   $ openqa-reporter parse --file <FILE.JSON> --ignore-errors -v
   $ openqa-reporter parse --dir <DIRECTORY>
+  $ openqa-reporter parse --url <URL>
+  $ openqa-reporter parse --url https://raw.githubusercontent.com/os-autoinst/openQA/master/t/testresults/00099/00099937-opensuse-13.1-DVD-i586-Build0091-kde/details-installer_desktopselection.json
 
   # Help commands
   $ openqa-reporter help <command>

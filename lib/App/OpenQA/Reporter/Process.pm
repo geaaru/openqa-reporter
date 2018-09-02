@@ -4,35 +4,84 @@ use strict; use warnings;
 use feature 'say';
 use utf8;
 
+use App::OpenQA::Reporter::Model::Resource;
 use Mojo::File;
 use Mojo::JSON qw(decode_json);
 use Data::Dump qw(pp);
+use LWP::Simple;
 
 require Exporter;
 our (@ISA, @EXPORT);
 @ISA    = qw(Exporter);
 @EXPORT = qw(
-  process_file
+  load_resources
   process_dir
+  process_file
+  process_url
   merge_resources
 );
 
-sub process_file {
-  my ($file, $r) = @_;
+sub load_resources {
+  my ($opt) = @_;
+  my @resources = ();
 
-  return 0 if !defined($file) || !defined($r);
-
-  my $i = Mojo::File->new($file);
-  my $ice = $i->slurp;
-
-  unless($ice) {
-    $r->set_error('Error on read data');
-    return 0;
+  if (defined($opt->{file})) {
+    foreach (@{ $opt->{file} }) {
+      iron->man->debug("Processing file $_...");
+      my $r = Resource::->new('file');
+      $r->set_file($_);
+      push @resources, $r;
+      unless (process_file($_, $r)) {
+        iron->man->error(
+          join("", "Error on process file $_: ", $r->get_error())
+        );
+        die "Error on process file $_"
+          unless(iron->man->ignore_errors());
+      }
+      iron->man->debug("File $_: ", pp($r));
+    }
   }
+
+  if (defined($opt->{url})) {
+    foreach (@{ $opt->{url} }) {
+      iron->man->debug("Processing url $_...");
+      my $r = Resource::->new('url');
+      $r->set_url($_);
+      push @resources, $r;
+      unless (process_url($_, $r)) {
+        iron->man->error(
+          join("", "Error on process url $_: ", $r->get_error())
+        );
+        die "Error on process url $_"
+          unless(iron->man->ignore_errors());
+      }
+      iron->man->debug("Url $_: ", pp($r));
+    }
+  }
+
+
+  if (defined($opt->{dir})) {
+    foreach (@{ $opt->{dir} }) {
+      iron->man->info("Processing directory $_...");
+      unless (process_dir($_, \@resources)) {
+        die "Error on process directory $_"
+          unless(iron->man->ignore_errors());
+        iron->man->error(
+          "Error on processing directory $_."
+        );
+      }
+    }
+  }
+
+  return @resources;
+}
+
+sub process_json {
+  my ($ice, $r) = @_;
 
   my ($ns, $ts) = (undef, undef);
   my @cream;
-  eval { @cream = decode_json($ice) } ;
+  eval { @cream = decode_json($$ice) } ;
   # say pp($cream);
 
   unless(defined($cream[0])) {
@@ -44,16 +93,35 @@ sub process_file {
     if (exists $_->{needle}) {
       if (exists $_->{screenshot}) {
         $ns = $r->get_needle($_->{screenshot});
-        if (exists $_->{result}) {
-          $ns->add_result(
-            $_->{result} eq "ok" ? "pass" :
-            $_->{result} eq "fail" ? "failure" : "unknown");
-        } else {
-          $ns->add_result("unknown");
+
+        for my $area (@{$_->{area}}) {
+          if (exists $area->{result}) {
+            $ns->add_result(
+              $area->{result} eq "ok" ? "pass" :
+              $area->{result} eq "fail" ? "failure" : "unknown");
+          } else {
+            $ns->add_result("unknown");
+          }
         }
 
-        # Check max number of needles
-        $ns->set_max_needles(scalar(@{$_->{needles}}));
+        if (exists $_->{needles}) {
+          # Check max number of needles
+          $ns->set_max_needles(scalar(@{$_->{needles}}));
+
+          # Get area under needles
+          for my $needle (@{$_->{needles}}) {
+            for my $area (@{$needle->{area}}) {
+              if (exists $area->{result}) {
+                $ns->add_result(
+                  $area->{result} eq "ok" ? "pass" :
+                  $area->{result} eq "fail" ? "failure" : "unknown");
+              } else {
+                $ns->add_result("unknown");
+              }
+            }
+
+          }
+        }
 
       } else {
         # POST: invalid object
@@ -71,10 +139,42 @@ sub process_file {
       }
     } else {
       $r->add_invalid();
+      iron->man->debug('Skip invalid object (without needle/text): ', pp($_));
     }
   }
 
   1;
+}
+
+sub process_file {
+  my ($file, $r) = @_;
+
+  return 0 if !defined($file) || !defined($r);
+
+  my $i = Mojo::File->new($file);
+  my $ice = $i->slurp;
+
+  unless($ice) {
+    $r->set_error('Error on read data');
+    return 0;
+  }
+
+  return process_json(\$ice, $r);
+}
+
+sub process_url {
+  my ($url, $r) = @_;
+
+  return 0 if !defined($url) || !defined($r);
+
+  my $ice = get($url);
+
+  unless($ice) {
+    $r->set_error("Error on retrieve data from url.");
+    return 0;
+  }
+
+  return process_json(\$ice, $r);
 }
 
 sub process_dir {
@@ -121,6 +221,7 @@ sub merge_resources {
   for (@{ $resources }) {
     my $nn = $_->get_needles();
     my $tt = $_->get_texts();
+    $invalid += $_->get_invalid();
     # NOTE: For now permit to use some files more times
     #       for easy test.
     unless ($i++) {
@@ -136,7 +237,7 @@ sub merge_resources {
     }
 
     for (keys %{ $$nn }) {
-      if (defined %{$$nn}{$_}) {
+      if (defined $needles{$_}) {
         $needles{$_}->add_result('n_files');
         for my $p (qw( pass failure unknown)) {
           $needles{$_}->merge_result($p,
@@ -149,10 +250,8 @@ sub merge_resources {
       }
     }
 
-    $invalid += $_->get_invalid();
-
     for (keys %{ $$tt }) {
-      if (defined %{$$tt}{$_}) {
+      if (defined $texts{$_}) {
         $texts{$_}->add_result('n_files');
         for my $p (qw( pass failure unknown)) {
           $texts{$_}->merge_result($p,

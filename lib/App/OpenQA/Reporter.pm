@@ -25,7 +25,7 @@ sub new {
   my $class = shift;
   $singleton ||= bless({
       'log' => Mojo::Log->new(level => 'warn'),
-      'app' => undef,
+      'data' => undef,
       'verbose' => 0,
       'ignore_errors' => 0,
     }, $class);
@@ -85,6 +85,18 @@ sub warn {
   my @msg = @_;
   $self->{log}->warn(@msg) if $self->{verbose};
   1;
+}
+
+sub set_data {
+  my $self = shift;
+  my $data = shift;
+  $self->{data} = $data;
+  1
+}
+
+sub get_data {
+  my $self = shift;
+  $self->{data};
 }
 
 *man=\&new;

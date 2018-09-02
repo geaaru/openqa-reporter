@@ -5,7 +5,10 @@ use feature 'say';
 use App::OpenQA::Reporter::Model::NeedlesSummary;
 use App::OpenQA::Reporter::Model::TextSummary;
 use App::OpenQA::Reporter::Model::Resource;
-use App::OpenQA::Reporter::Process qw(process_file process_dir merge_resources);
+use App::OpenQA::Reporter::Process qw(
+  load_resources
+  merge_resources
+);
 use Data::Dump qw(pp);
 
 sub abstract { "Process OpenQA report(s)" }
@@ -35,39 +38,7 @@ sub validate_args {
 
 sub execute {
   my ($self, $opt, $args) = @_;
-  my @resources = ();
-
-  if (defined($opt->{file})) {
-
-    foreach (@{ $opt->{file} }) {
-      iron->man->debug("Processing file $_...");
-      my $r = Resource::->new('file');
-      $r->set_file($_);
-      push @resources, $r;
-      unless (process_file($_, $r)) {
-        iron->man->error(
-          join("", "Error on process file $_: ", $r->get_error())
-        );
-        die "Error on process file $_"
-          unless(iron->man->ignore_errors());
-      }
-      iron->man->debug("File $_: ", pp($r));
-    }
-  }
-
-  if (defined($opt->{dir})) {
-    foreach (@{ $opt->{dir} }) {
-      iron->man->info("Processing directory $_...");
-      unless (process_dir($_, \@resources)) {
-        die "Error on process directory $_"
-          unless(iron->man->ignore_errors());
-        iron->man->error(
-          "Error on processing directory $_."
-        );
-      }
-    }
-  }
-
+  my @resources = load_resources($opt);
   my ($needles, $texts, $invalid) = merge_resources(\@resources);
 
   if (scalar(%{ $needles })) {

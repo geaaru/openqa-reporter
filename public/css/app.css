@@ -1,0 +1,41 @@
+/*
+ * *, *:before, *:after {
+    box-sizing: border-box;
+}
+*/
+
+body {
+    font-family: 'Droid Sans', sans-serif;
+}
+
+article {
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+
+
+
+
+/*
+=================
+MEDIA QUERIES
+=================
+*/
+
+/*LESS THAN 460px*/
+  /*
+@media all and (max-width: 460px) {
+
+}
+*/
+
+/*GREATER THAN 460px*/
+  /*
+@media all and (min-width: 460px) {
+
+}
+*/

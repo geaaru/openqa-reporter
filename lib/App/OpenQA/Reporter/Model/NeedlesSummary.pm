@@ -28,7 +28,9 @@ sub NeedlesSummary::get_max_needles {
 
 sub NeedlesSummary::set_max_needles {
   my ($self, $max) = @_;
-  $self->{max_needles} = $max;
+  if ($max gt $self->{max_needles}) {
+    $self->{max_needles} = $max;
+  }
   1;
 }
 
