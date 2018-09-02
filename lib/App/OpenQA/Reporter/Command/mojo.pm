@@ -13,7 +13,7 @@ use Data::Dump qw(pp);
 sub abstract { "Web Server Reports Frontend" }
 
 sub description {
-  "Process a file or a directory and produce a summary";
+  "Start OpenQA WebUI and display reports results.";
 }
 
 sub opt_spec {
