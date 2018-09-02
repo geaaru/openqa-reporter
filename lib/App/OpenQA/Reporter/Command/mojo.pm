@@ -1,5 +1,6 @@
 package App::OpenQA::Reporter::Command::mojo;
 use Mojo::Server;
+use Mojolicious::Renderer;
 use App::OpenQA::Reporter -command;
 use strict; use warnings;
 use feature 'say';
@@ -57,9 +58,17 @@ sub execute {
 
   @ARGV = @{ $args };
 
+  my $path = defined($ENV{'OPENQA_REPORTER_WEBROOT'}) ?
+    $ENV{'OPENQA_REPORTER_WEBROOT'} : '.';
+
   # Configure static directory
   my $static = $app->static;
-  push @{ $static->paths}, './public';
+  push @{ $static->paths }, join("", $path, '/public');
+
+  # Configure templates directory
+  my $renderer = $app->renderer->paths([
+      join("", $path, '/templates')
+  ]);
 
   $app->start();
 }

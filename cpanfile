@@ -6,6 +6,7 @@ requires 'Package::Alias';
 requires 'Mojo::Log';
 requires 'Mojo::JSON';
 requires 'Mojo::File';
+requires 'Mojolicious::Lite';
 
 
 on 'test' => sub {
