@@ -24,6 +24,8 @@ openqa-reporter - a openqa reporter files parser.
   $ openqa-reporter parse --url <URL>
   $ openqa-reporter parse --url https://raw.githubusercontent.com/os-autoinst/openQA/master/t/testresults/00099/00099937-opensuse-13.1-DVD-i586-Build0091-kde/details-installer_desktopselection.json
 
+  $ openqa-reporter mojo daemon --dir <DIRECTORY>
+
   # Help commands
   $ openqa-reporter help <command>
   $ openqa-reporter help|-h|--help
@@ -49,6 +51,36 @@ Parse file or directory and produce test result summary.
   -f[=STR...] --file[=STR...]  File to parse
   -d[=STR...] --dir[=STR...]   Directory to parse
   -u[=STR...] --url[=STR...]   Url to file to parse
+
+=head2 mojo
+Start WebUI for display reports results.
+
+  $ openqa-reporter mojo [-dfu] [long options...]
+
+  Start OpenQA WebUI and display reports results.
+    -f[=STR...] --file[=STR...]  File to parse
+    -d[=STR...] --dir[=STR...]   Directory to parse
+    -u[=STR...] --url[=STR...]   Url to file to parse
+
+  For Mojolijous commands help:
+
+  $ openqa-reporter mojo daemon -d /reports
+
+  Commands:
+   cgi       Start application with CGI
+   cpanify   Upload distribution to CPAN
+   daemon    Start application with HTTP and WebSocket server
+   eval      Run code against application
+   generate  Generate files and directories from templates
+   get       Perform HTTP request
+   inflate   Inflate embedded files to real files
+   prefork   Start application with pre-forking HTTP and WebSocket server
+   psgi      Start application with PSGI
+   routes    Show available routes
+   test      Run tests
+   version   Show versions of available modules
+
+  See 'APPLICATION help COMMAND' for more information on a specific command.
 
 
 =head1 LICENSE
